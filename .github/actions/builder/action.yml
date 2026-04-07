@@ -2,11 +2,28 @@ runs:
   using: "composite"
   steps:
     - name: Setup Node.js environment
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
-        node-version: "14"
+        node-version: "18"
         registry-url: "https://npm.pkg.github.com"
         scope: "@kungfu-trader"
+
+    - name: Fix yarn.lock for overseas registry
+      shell: bash
+      run: |
+        python3 -c "
+        content = open('yarn.lock').read()
+        content = content.replace(
+          'https://registry.nlark.com/sax/download/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9',
+          'https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9'
+        )
+        content = content.replace(
+          'integrity sha1-KBYjTiN4vdxOU1T6tcqold9xANk=',
+          'integrity sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw=='
+        )
+        open('yarn.lock', 'w').write(content)
+        print('yarn.lock patched successfully')
+        "
 
     - name: Setup Yarn environment
       env:
@@ -30,7 +47,7 @@ runs:
       run: yarn package
 
     - name: Upload
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#github-context
         name: "libnode-${{env.BUILDER_OS}}-${{github.actor}}-${{github.sha}}"

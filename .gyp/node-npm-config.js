@@ -20,7 +20,7 @@ function npmCall(npmArgs) {
   console.log(`$ npm ${npmArgs.join(' ')}`);
   const result = spawnSync('npm', npmArgs, spawnOptsInherit);
   if (result.status !== 0) {
-    console.error(`Failed with status ${status}`);
+    console.error(`Failed with status ${result.status}`);
     process.exit(result.status);
   }
 }
@@ -39,7 +39,11 @@ function showAllConfig() {
 }
 
 if (require.main === module && process.env.CI && process.env.GITHUB_ACTIONS) {
-  npmCall(['config', 'set', npmConfigKey, PrebuiltHost_US]);
+  const os = require('os');
+  const npmrcPath = path.resolve(os.homedir(), '.npmrc');
+  const configLine = `${npmConfigKey}=${PrebuiltHost_US}\n`;
+  fs.appendFileSync(npmrcPath, configLine);
+  console.log(`Written ${npmConfigKey}=${PrebuiltHost_US} to ${npmrcPath}`);
 }
 
 if (require.main === module) {
