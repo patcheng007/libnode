@@ -34,6 +34,10 @@ runs:
     - name: Make libnode
       shell: bash
       # Workaround for gyp not able to find nasm.exe when run on GitHub Windows runner
+      # -Wno-enum-constexpr-conversion: suppress Clang 15+ error when building Node.js V8 on macos-14
+      env:
+        CFLAGS: "-Wno-enum-constexpr-conversion"
+        CXXFLAGS: "-Wno-enum-constexpr-conversion"
       run: yarn make
 
     - name: Build
